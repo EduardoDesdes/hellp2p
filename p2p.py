@@ -34,6 +34,7 @@ class ThreadedService(socketserver.ThreadingMixIn, socketserver.TCPServer, socke
     pass
 
 ###########################################################
+
 def get_neighbors(neighbors):
     return list(neighbors.keys())
 
@@ -49,17 +50,17 @@ def is_destination(myself,destination):
 
 def send_message(neighbors,destination, msg="test"):
     if is_neighbor(neighbors,destination):
-        print("Si es vecino :D")
-        print("Enviando paquete a",destination,"con IP:",neighbors[destination][0])
+        #print("Si es vecino :D")
+        #print("Enviando paquete a",destination,"con IP:",neighbors[destination][0])
         conn = remote(neighbors[destination][0], neighbors[destination][1])
         conn.send(msg+","+destination)
         conn.close()
     else:
-        print("Pues no es su vecino :c")
+        #print("Pues no es su vecino :c")
         n_neighbors=len(get_neighbors(neighbors))
         #print(list(get_neighbors(neighbors)))
         forward = get_neighbors(neighbors)[randrange(n_neighbors)]
-        print("Se eligió a",forward, "con IP", neighbors[forward][0], "Pero el destinatario sigue siendo", destination)
+        #print("Se eligió a",forward, "con IP", neighbors[forward][0], "Pero el destinatario sigue siendo", destination)
         conn = remote(neighbors[forward][0], neighbors[forward][1])
         conn.send(msg+","+destination)
         conn.close()
@@ -73,14 +74,14 @@ def recive_message(myself,neighbors,destination,msg="test"):
         print("| "+msg)
         print("-"*20)
     else:
-        print("No soy yo, enviando mensaje a otro")
+        #print("No soy yo, enviando mensaje a otro")
         send_message(neighbors,destination,msg)
 
 def import_profile(file):
 
     neighbors_t={}
 
-    f = open(file[:-1]+".pf", "r")
+    f = open(file+".pf", "r")
     linea = f.read()
     result = json.loads(linea, strict=False)
 
@@ -97,8 +98,15 @@ def import_profile(file):
 
 def main():
     global myself,neighbors
-    file=input("Enter file profile: ")
-    myself,neighbors,port = import_profile(file)
+    #file=input("Enter file profile: ")
+
+    if len(sys.argv) != 2:
+        print("Uso: python script.py <nombre_del_archivo>")
+        sys.exit(1)
+
+    nombre_del_archivo = sys.argv[1]
+
+    myself,neighbors,port = import_profile('profiles/'+nombre_del_archivo)
 
     host = '0.0.0.0'
     print('Starting server...')
@@ -120,10 +128,10 @@ def main():
         print("¿Que desea hacer?")
         print("1) Enviar Un mensaje")
         print("0) Exit")
-        r=input("> ")[:-1]
+        r=input("> ")
         if r == '1':
-            dst=input("Para quien?: ")[:-1]
-            txt=input("Que le quieres decir?: ")[:-1]
+            dst=input("Para quien?: ")
+            txt=input("Que le quieres decir?: ")
             send_message(neighbors,dst, msg=txt)
         elif r == '0':
             break
